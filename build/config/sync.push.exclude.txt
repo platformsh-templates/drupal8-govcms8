@@ -18,3 +18,5 @@ docroot
 node_modules
 vendor
 vfs:
+.platform
+.platform.app.yaml
