@@ -1,0 +1,43 @@
+# Ignore govCMS build files.
+build.properties
+tests/screenshots/*
+
+# Ignore drupal core.
+docroot/
+
+# Ignore build artifacts
+/deploy
+bin/*
+reports
+
+# Composer vendor
+composer.lock
+vendor/
+vendor/.git
+
+# Sass
+.sass-cache
+
+# Node
+node_modules/
+
+# Drupal console
+console/
+console/cache/
+
+# DrupalVM
+.vagrant/
+behat.vm.yml
+
+# PHPStorm
+.idea/
+atlassian-ide-plugin.xml
+
+# Netbeans IDE
+nbproject
+nbproject/*
+
+# OS X
+.DS_Store
+.AppleDouble
+.LSOverride
