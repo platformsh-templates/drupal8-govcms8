@@ -1,0 +1,64 @@
+{
+    "name": "govcms/govcms8-project",
+    "description": "Project template for the GovCMS8 Drupal Distribution",
+    "keywords": ["GovCMS", "GovCMS8"],
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://www.govcms.gov.au",
+    "support": {
+        "issues:": "https://github.com/govCMS/govCMS8/issues",
+        "wik": "https://github.com/govCMS/govCMS8/wiki",
+        "source": "https://github.com/govCMS/govCMS8/releases"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "require": {
+        "php": "^7.3",
+        "cweagans/composer-patches": "^1.6",
+        "drupal-composer/drupal-scaffold": "^2.5",
+        "drupal/redis": "^1.4",
+        "drush/drush": "^10.3",
+        "govcms/govcms": "~1",
+        "platformsh/config-reader": "^2.3",
+        "symfony/event-dispatcher": "4.3.11 as 3.4.41"
+    },
+    "require-dev": {
+    },
+    "extra": {
+        "installer-types": ["bower-asset", "npm-asset"],
+        "installer-paths": {
+            "docroot/core": ["type:drupal-core"],
+            "docroot/modules/contrib/{$name}": ["type:drupal-module"],
+            "docroot/modules/custom/{$name}": ["type:drupal-custom-module"],
+            "docroot/profiles/{$name}": ["type:drupal-profile"],
+            "docroot/themes/contrib/{$name}": ["type:drupal-theme"],
+            "docroot/themes/custom/{$name}": ["type:drupal-custom-theme"],
+            "docroot/libraries/{$name}": ["type:drupal-library", "type:bower-asset", "type:npm-asset"],
+            "drush/contrib/{$name}": ["type:drupal-drush"]
+        },
+        "enable-patching": true
+    },
+    "config": {
+        "bin-dir": "bin/",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "post-install-cmd": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold",
+        "post-update-cmd": "DrupalComposer\\DrupalScaffold\\Plugin::scaffold",
+        "nuke": "rm -r -f bin docroot vendor composer.lock"
+    },
+    "suggest": {
+        "hirak/prestissimo": "^0.3"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
