@@ -24,10 +24,10 @@
         "php": "^7.3",
         "cweagans/composer-patches": "^1.6",
         "drupal-composer/drupal-scaffold": "^2.5",
-        "drupal/redis": "^1.4",
+        "drupal/redis": "^1.5",
         "drush/drush": "^10.3",
         "govcms/govcms": "~1",
-        "platformsh/config-reader": "^2.3",
+        "platformsh/config-reader": "^2.4",
         "symfony/event-dispatcher": "4.3.11 as 3.4.41"
     },
     "require-dev": {
