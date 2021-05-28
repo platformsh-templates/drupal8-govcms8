@@ -15,3 +15,9 @@
 "https://www.{default}/":
     type: redirect
     to: "https://{default}/"
+
+https://{default}/wp-admin/:
+    type: upstream
+    upstream: "app:http"
+    cache:
+        enabled: false
