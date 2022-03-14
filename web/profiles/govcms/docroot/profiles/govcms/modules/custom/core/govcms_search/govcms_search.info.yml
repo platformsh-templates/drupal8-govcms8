@@ -1,0 +1,12 @@
+name: GovCMS Search
+type: module
+description: Provide default search functions.
+package: GovCMS
+core: 8.x
+dependencies:
+  - block
+  - datetime_range
+  - search_api
+  - search_api_db
+  - facets
+  - views

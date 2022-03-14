@@ -1,0 +1,8 @@
+services:
+  plugin.manager.minisite_archiver:
+    class: Drupal\minisite\ArchiverManager
+    parent: plugin.manager.archiver
+  minisite.subscriber:
+    class: Drupal\minisite\EventSubscriber\AliasSubscriber
+    tags:
+      - { name: event_subscriber }
