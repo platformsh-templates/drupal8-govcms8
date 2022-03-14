@@ -1,5 +1,0 @@
-# GovCMS Bartik styling.
-govcms-bartik-styling:
-  css:
-    theme:
-      css/govcms-bartik.theme.style.css: {}
