@@ -1,0 +1,14 @@
+admin tfa settings:
+  title: 'Administer TFA'
+  description: 'Configure two-factor authentication settings.'
+  restrict access: TRUE
+
+setup own tfa:
+  title: 'Set up TFA for account'
+  description: 'Allow users to set up TFA for their account. Users with "administer users" permission can edit TFA for other accounts.'
+  restrict access: FALSE
+
+disable own tfa:
+  title: 'Disable TFA Account'
+  description: 'Allow user to disable once setup'
+  restrict access: FALSE

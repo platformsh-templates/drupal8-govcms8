@@ -1,0 +1,4 @@
+'administer search_api_attachments':
+  title: 'Administer Search API Attachments'
+  description: 'Configure the commands used by Search API Attachments to exectract data.'
+  restrict access: TRUE
