@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * Protects a site with the managed blacklist.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function module_permissions_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the module_permissions module.
+    case 'help.page.module_permissions':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Protects a site with the managed blacklist of modules, permissions and paths.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function module_permissions_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter') {
+    $group = $implementations['module_permissions'];
+    unset($implementations['module_permissions']);
+    $implementations['module_permissions'] = $group;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function module_permissions_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\module_permissions\Helper $helper */
+  $helper = \Drupal::service('module_permissions.helper');
+  switch ($form_id) {
+    case 'system_modules':
+      if ($helper->isRestrictedForm($form_id)) {
+        $helper->alterSystemModulesForm($form, $form_state);
+      }
+      break;
+
+    case 'system_modules_uninstall':
+      if ($helper->isRestrictedForm($form_id)) {
+        $helper->alterSystemModulesUninstallForm($form, $form_state);
+      }
+      break;
+
+    case 'user_admin_permissions':
+      if ($helper->isRestrictedForm($form_id)) {
+        $helper->alterUserAdminPermissionsForm($form, $form_state);
+      }
+      break;
+  }
+}

@@ -1,0 +1,242 @@
+<?php
+
+/**
+ * @file
+ * Main functions of the Minisite module.
+ */
+
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\file\FileInterface;
+use Drupal\minisite\AssetInterface;
+use Drupal\minisite\Exception\ArchiveException;
+use Drupal\minisite\Minisite;
+
+require_once dirname(__FILE__) . '/minisite.theme.inc';
+
+/**
+ * Implements hook_help().
+ */
+function minisite_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.minisite':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Used to upload and run self contained structured but static content as "mini websites".') . '</p>';
+
+      $output .= '<h3>' . t('Archives') . '</h3>';
+      $output .= '<p>' . t('Supported archive files are <code>@archives</code>.', ['@archives' => implode(', ', Minisite::supportedArchiveExtensions())]) . '</p>';
+
+      $output .= '<p>' . t('Archives must abide by the following constraints:') . '</p>';
+      $output .= '<ul>';
+      $output .= '  <li>' . t('Must contain only one top-level directory.') . '</li>';
+      $output .= '  <li>' . t('Must contain only files with extensions from the "allowed list" (configured for each field).') . '</li>';
+      $output .= '  <li>' . t('Must contain <code>@index</code> page under topmost root directory.', ['@index' => AssetInterface::INDEX_FILE]) . '</li>';
+      $output .= '  <li>' . t('Should contain pages with relative links.') . '</li>';
+      $output .= '</ul>';
+
+      $output .= '<h3>' . t('URL rewrite (alias)') . '</h3>';
+      $output .= '<p>' . t('Applies when the "Use alias" option is selected after a mini-site archive is uploaded.</p>');
+      $output .= '<p>' . t('A mini-site served through an aliased URL updates internal links that are rewritten based on the following rules:') . '</p>';
+
+      $output .= '<ul>';
+
+      $output .= '  <li>';
+      $output .= '    <p>' . t('For <code>&lt;a&gt;</code> tag:') . '</p>';
+      $output .= '    <ul>';
+      $output .= '      <li>' . t('If link is external, do not alter it.') . '</li>';
+      $output .= '      <li>' . t('If link is to the HTML document and relative to root (starts with <code>./</code> or <code>/</code>), rewrite it to point to the aliased path.') . '</li>';
+      $output .= '      <li>' . t('If link is to the HTML document and relative to other documents (starts with <code>../</code>), rewrite it to always point to the aliased path.') . '</li>';
+      $output .= '      <li>' . t('If link is to the non-HTML file, rewrite it to always point to the expanded file in the file system.') . '</li>';
+      $output .= '    </ul>';
+      $output .= '  </li>';
+
+      $output .= '  <li>';
+      $output .= '    <p>' . t('For <code>&lt;link&gt;</code>, <code>&lt;script&gt;</code> and <code>&lt;img&gt;</code> tags:') . '</p>';
+      $output .= '    <ul>';
+      $output .= '      <li>' . t('If link is external, do not alter it.') . '</li>';
+      $output .= '      <li>' . t('All other types of links are rewritten to always point to the expanded file in the file system.') . '</li>';
+      $output .= '    </ul>';
+      $output .= '  </li>';
+
+      $output .= '  <li>' . t('The <code>&lt;base&gt;</code> tag in <code>&lt;head&gt;</code> is always removed.') . '</li>';
+      $output .= '</ul>';
+
+      return $output;
+  }
+}
+
+/**
+ * Validation callback.
+ *
+ * @param \Drupal\file\FileInterface $file
+ *   The file to validate.
+ * @param string $content_extensions
+ *   String list of the allowed archive content extensions.
+ *
+ * @return array
+ *   Array of errors, if any.
+ */
+function minisite_validate_archive(FileInterface $file, $content_extensions) {
+  $errors = [];
+
+  try {
+    Minisite::validateArchive($file, $content_extensions);
+  }
+  catch (ArchiveException $exception) {
+    $errors[] = $exception->getMessage();
+  }
+  catch (\Exception $exception) {
+    $errors[] = t('Unable to use uploaded file as a Minisite');
+  }
+
+  return $errors;
+}
+
+/**
+ * Implements hook_path_insert().
+ */
+function minisite_path_insert($path) {
+  $entity = _minisite_get_entity_from_path($path['source']);
+
+  if (!$entity) {
+    return;
+  }
+
+  $path_alias = isset($path['alias']) ? $path['alias'] : '';
+
+  $minisite_fields = _minisite_get_fields($entity);
+
+  foreach ($minisite_fields as $minisite_field) {
+    if ($entity->hasField($minisite_field->getName())) {
+      $minisite = Minisite::createInstance($entity->{$minisite_field->getName()});
+      if ($minisite) {
+        $minisite->setAlias($path_alias);
+        $minisite->save();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_path_update().
+ */
+function minisite_path_update($path) {
+  minisite_path_insert($path);
+}
+
+/**
+ * Get information about all entities that have a minisite archive attached.
+ *
+ * @param bool $flatten
+ *   (optional) Flatten a list instead of providing as a tree.
+ *   Defaults to FALSE.
+ * @param string $flatten_delimiter
+ *   (optional) The delimiter to use if $flatten is TRUE. Defaults to '__'.
+ *
+ * @return array
+ *   If $flatten is FALSE, returns a multidimentional array with hierarchy
+ *   entity_type => field_name => id.
+ *   If $flatten is TRUE, returns an array of flatenned values in format
+ *   "entity_type__field_name__entity_id".
+ */
+function minisite_get_info_all($flatten = FALSE, $flatten_delimiter = '__') {
+  $info = [];
+
+  // Collect all entity types with field names.
+  $map = \Drupal::service('entity_field.manager')->getFieldMapByFieldType('minisite');
+  foreach ($map as $entity_type_id => $entity_type_info) {
+    foreach (array_keys($entity_type_info) as $name) {
+      if (FieldStorageConfig::loadByName($entity_type_id, $name)->getSetting('target_type') == 'file') {
+        $minisite_field_ids[] = "$entity_type_id.$name";
+      }
+    }
+  }
+
+  foreach ($minisite_field_ids as $minisite_field_id) {
+    /** @var \Drupal\field\FieldStorageConfigInterface $field_storage */
+    $field_storage = FieldStorageConfig::load($minisite_field_id);
+
+    $entity_type_id = $field_storage->getTargetEntityTypeId();
+    $field_name = $field_storage->getName();
+
+    $target_entity_type_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+    $id_key = $target_entity_type_definition->getKey('id');
+
+    // Get all entities for this field that have values.
+    $entity_ids = \Drupal::entityQuery($entity_type_id)
+      ->condition($field_name, NULL, 'IS NOT NULL')
+      ->sort($id_key, 'ASC')
+      ->accessCheck(FALSE)
+      ->execute();
+
+    if ($entity_ids) {
+      if ($flatten) {
+        foreach ($entity_ids as $entity_id) {
+          $info[] = $entity_type_id . $flatten_delimiter . $field_name . $flatten_delimiter . $entity_id;
+        }
+      }
+      else {
+        $info[$entity_type_id][$field_name] = array_values($entity_ids);
+      }
+    }
+  }
+
+  return $info;
+}
+
+/**
+ * Get Minisite fields from the entity.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   Entity to get fields from.
+ *
+ * @return array
+ *   Array of Minisite field names.
+ */
+function _minisite_get_fields(EntityInterface $entity) {
+  if (!$entity instanceof FieldableEntityInterface) {
+    return [];
+  }
+
+  /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+  $entity_field_manager = Drupal::service('entity_field.manager');
+
+  /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $minisite_fields */
+  return array_filter($entity_field_manager->getFieldDefinitions($entity->getEntityTypeId(), $entity->bundle()), function (FieldDefinitionInterface $field_definition) {
+    return $field_definition->getType() == 'minisite';
+  });
+}
+
+/**
+ * Get entity from provided path.
+ *
+ * @param string $path
+ *   Source path to find the entity.
+ *
+ * @return \Drupal\Core\Entity\FieldableEntityInterface|null
+ *   Found entity or NULL if the entity was not found.
+ */
+function _minisite_get_entity_from_path($path) {
+  try {
+    $params = Url::fromUri('internal:' . $path)->getRouteParameters();
+  }
+  catch (\InvalidArgumentException $exception) {
+    return NULL;
+  }
+  $entity_type = key($params);
+
+  try {
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+  }
+  catch (PluginNotFoundException $exception) {
+    return NULL;
+  }
+
+  return $storage->load($params[$entity_type]);
+}

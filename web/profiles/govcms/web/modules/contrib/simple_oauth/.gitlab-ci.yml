@@ -1,0 +1,13 @@
+variables:
+  PHP_TAG: "8.1"
+
+include:
+  - project: 'drupalspoons/composer-plugin'
+    # Best practice is to pin to a tag or a SHA1. https://docs.gitlab.com/ee/ci/yaml/#includefile
+    ref: '2.1.0'
+    file: 'templates/.gitlab-ci.yml'
+
+composer_node:
+  stage: build
+  variables:
+    DRUPAL_CORE_CONSTRAINT: ^9.3

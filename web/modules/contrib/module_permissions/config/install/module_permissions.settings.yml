@@ -1,0 +1,5 @@
+managed_modules: {}
+protected_modules: {}
+permission_blacklist:
+  - 'administer modules'
+  - 'administer permissions'
