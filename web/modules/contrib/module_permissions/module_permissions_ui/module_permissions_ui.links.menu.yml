@@ -1,0 +1,24 @@
+module_permissions_ui.settings:
+  title: 'Module Permissions'
+  description: 'Manage Module Permissions settings.'
+  parent: system.admin_config_system
+  route_name: module_permissions_ui.settings
+  weight: 100
+module_permissions_ui.managed_modules:
+  title: 'Managed modules'
+  description: 'Manage Managed modules.'
+  parent: module_permissions_ui.settings
+  route_name: module_permissions_ui.managed_modules
+  weight: 10
+module_permissions_ui.permission_blacklist:
+  title: 'Permission blacklist'
+  description: 'Manage Permission blacklist.'
+  parent: module_permissions_ui.settings
+  route_name: module_permissions_ui.permission_blacklist
+  weight: 20
+module_permissions_ui.protected_modules:
+  title: 'Protected modules'
+  description: 'Manage Protected modules.'
+  parent: module_permissions_ui.settings
+  route_name: module_permissions_ui.protected_modules
+  weight: 30

@@ -1,0 +1,12 @@
+administer module_permissions:
+  title: 'Administer the list of modules that can be managed by others'
+  description: 'Add and remove modules from the managed module list.'
+  restrict access: TRUE
+administer managed modules:
+  title: 'Administer managed modules'
+  description: 'Install and uninstall modules from the managed module list. Bypassed by the "Administer modules" permission.'
+  restrict access: TRUE
+administer managed modules permissions:
+  title: 'Administer managed modules permissions'
+  description: 'Configure permissions for the modules that are in the managed modules list. Requires the "Administer managed modules" permission. Bypassed by the "Administer permissions" permission.'
+  restrict access: TRUE
