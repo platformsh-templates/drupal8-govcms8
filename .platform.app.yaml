@@ -7,13 +7,13 @@
 name: 'drupal'
 
 # The runtime the application uses.
-type: 'php:8.0'
+type: 'php:7.4'
 
 runtime:
     # Enable the redis extension so Drupal can communicate with the Redis cache.
     extensions:
         - redis
-        # - blackfire
+        - blackfire
         - sodium
         - apcu
 
