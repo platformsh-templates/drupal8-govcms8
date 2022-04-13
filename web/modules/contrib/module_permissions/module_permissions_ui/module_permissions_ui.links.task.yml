@@ -1,0 +1,16 @@
+module_permissions_ui.settings:
+  title: 'Settings'
+  route_name: module_permissions_ui.settings
+  base_route: module_permissions_ui.settings
+module_permissions_ui.managed_modules:
+  title: 'Managed modules'
+  route_name: module_permissions_ui.managed_modules
+  base_route: module_permissions_ui.settings
+module_permissions_ui.permission_blacklist:
+  title: 'Permission blacklist'
+  route_name: module_permissions_ui.permission_blacklist
+  base_route: module_permissions_ui.settings
+module_permissions_ui.protected_modules:
+  title: 'Protected modules'
+  route_name: module_permissions_ui.protected_modules
+  base_route: module_permissions_ui.settings
