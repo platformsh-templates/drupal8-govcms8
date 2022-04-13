@@ -1,0 +1,9 @@
+services:
+  modifiers:
+    class: \Drupal\modifiers\Modifiers
+    arguments: ['@module_handler', '@plugin.manager.modifier']
+
+  plugin.manager.modifier:
+    class: \Drupal\modifiers\ModifierPluginManager
+    parent: default_plugin_manager
+    arguments: ['@theme_handler']
