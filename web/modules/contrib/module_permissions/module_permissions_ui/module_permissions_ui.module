@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Module Permissions UI.
+ */
+
+use Drupal\Core\Render\Element;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Template\Attribute;
+
+/**
+ * Implements hook_help().
+ */
+function module_permissions_ui_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the module_permissions_ui module.
+    case 'help.page.module_permissions_ui':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Administrative interface to Module Permissions module.') . '</p>';
+      return $output;
+
+    case 'module_permissions_ui.managed_modules':
+      return '<p>' . t('Managed modules let you define a subset of modules and allow users of another role to manage those selected modules.') . '</p>';
+
+    case 'module_permissions_ui.protected_modules':
+      return '<p>' . t('Protected modules let you define a subset of modules that cannot be uninstalled from the system.') . '</p>';
+
+    case 'module_permissions_ui.permission_blacklist':
+      return '<p>' . t('Permission blacklist lets you to exclude a subset of permissions provided by managed modules. Users having permission to administer the managed modules will not be able to manage to the blacklisted permissions.') . '</p>';
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function module_permissions_ui_theme() {
+  return [
+    'module_permissions_ui_system_modules' => [
+      'render element' => 'form',
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for module list pages.
+ *
+ * Default template: module-permissions-ui-system-modules.html.twig.
+ *
+ * @param array $variables
+ *   List of variables.
+ */
+function template_preprocess_module_permissions_ui_system_modules(array &$variables) {
+  $form = $variables['form'];
+  $variables['module_operation'] = !empty($form['#module_operation']) ? $form['#module_operation'] : t('Select');
+  $variables['system_compact_link'] = $form['system_compact_link'];
+  $variables['modules'] = [];
+
+  // Iterate through all the modules, which are children of this element.
+  foreach (Element::children($form['modules']) as $key) {
+    $module = $form['modules'][$key];
+    $module['module_name'] = $module['#module_name'];
+    $module['checkbox'] = $form['selected_modules'][$key];
+    $module['checkbox_id'] = $form['selected_modules'][$key]['#id'];
+    $module['reasons_count'] = 0;
+    if (!empty($module['#requires'])) {
+      $module['requires'] = $module['#requires'];
+      $module['reasons_count'] = $module['reasons_count'] + 1;
+    }
+    if (!empty($module['#required_by'])) {
+      $module['required_by'] = $module['#required_by'];
+      $module['reasons_count'] = $module['reasons_count'] + 1;
+    }
+    $module['attributes'] = new Attribute($module['#attributes']);
+    $variables['modules'][] = $module;
+  }
+}

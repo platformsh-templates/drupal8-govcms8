@@ -1,0 +1,6 @@
+init:
+  js:
+    js/modifiers.init.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

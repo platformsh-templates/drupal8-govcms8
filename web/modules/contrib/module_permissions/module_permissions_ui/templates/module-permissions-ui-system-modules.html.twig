@@ -1,0 +1,71 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the modules page.
+ *
+ * Available variables:
+ * - form: The modules form.
+ * - module_operation: Select, Manage, or Protect.
+ * - modules: Contains multiple module instances. Each module contains:
+ *   - attributes: Attributes on the row.
+ *   - module_name: The name of the module.
+ *   - checkbox: A checkbox for uninstalling the module.
+ *   - checkbox_id: A unique identifier for interacting with the checkbox
+ *     element.
+ *   - name: The human-readable name of the module.
+ *   - description: The description of the module.
+ *
+ * @see template_preprocess_module_permissions_ui_system_modules()
+ *
+ * @ingroup themeable
+ */
+#}
+{{ form.filters }}
+
+{{ system_compact_link }}
+
+<table class="responsive-enabled">
+  <thead>
+    <tr>
+      <th>{{ module_operation }}</th>
+      <th>{{ 'Name'|t }}</th>
+      <th>{{ 'Description'|t }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for module in modules %}
+      {% set zebra = cycle(['odd', 'even'], loop.index0) -%}
+      <tr{{ module.attributes.addClass(zebra) }}>
+        <td align="center">
+          {{- module.checkbox -}}
+        </td>
+        <td>
+          <label for="{{ module.checkbox_id }}" class="module-name table-filter-text-source">{{ module.name }}</label>
+        </td>
+        <td class="description">
+          <span class="text module-description">{{ module.description }}</span>
+          {% if module.reasons_count > 0 %}
+            <div class="admin-requirements">
+              <div class="item-list">
+                <ul>
+                  {%- if module.requires -%}
+                    <li>{{ 'Requires: @module-list'|t({'@module-list': module.requires|safe_join(', ') }) }}</li>
+                  {%- endif -%}
+                  {%- if module.required_by -%}
+                    <li>{{ 'Required by: @module-list'|t({'@module-list': module.required_by|safe_join(', ') }) }}</li>
+                  {%- endif -%}
+                </ul>
+              </div>
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr class="odd">
+        <td colspan="3" class="empty message">{{ 'No modules are available.'|t }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{{ form|without('filters', 'modules', 'selected_modules', 'module_operation') }}
