@@ -1,0 +1,102 @@
+tfa.settings:
+  type: config_object
+  label: 'TFA settings'
+  mapping:
+    enabled:
+      type: integer
+      label: 'TFA enabled'
+    required_roles:
+      type: sequence
+      label: 'Roles required to setup TFA'
+      sequence:
+        type: string
+        label: 'Role'
+    send_plugins:
+     type: sequence
+     label: 'Enabled send plugins'
+     sequence:
+       type: tfa.send.config.[%key]
+    login_plugins:
+      type: sequence
+      label: 'Enabled Login plugins'
+      sequence:
+        type: tfa.login.config.[%key]
+    allowed_validation_plugins:
+      type: sequence
+      label: 'Allowed validation plugins'
+      sequence:
+        type: string
+        label: 'Validation plugin ID'
+    default_validation_plugin:
+      type: string
+      label: 'Default validation plugin'
+    validation_plugin_settings:
+      label: 'TFA validation plugin configuration'
+      type: sequence
+      sequence:
+        type: tfa.validation.plugin.config.[%key]
+    validation_skip:
+      type: integer
+      label: 'No. of times a user without tfa validation set-up can login.'
+    encryption:
+      type: string
+      label: 'The id of the encryption profile.'
+    trust_cookie_expiration:
+      type: integer
+      label: 'How long before TFA cookies expire. Default is 30 days.'
+    cookie_name:
+      type: string
+      label: 'Cookie name of TFA trusted browser cookie. Default is "TB".'
+    tfa_flood_uid_only:
+      type: integer
+      label: 'TFA Flood UID Ban Only'
+    tfa_flood_window:
+      type: integer
+      label: 'TFA Flood Window'
+    tfa_flood_threshold:
+      type: integer
+      label: 'TFA Flood Threshold'
+    help_text:
+      type: label
+      label: 'Text to display on help page. Plain text only.'
+    mail:
+      type: config_object
+      label: 'Various Emails sent by TFA'
+      mapping:
+        # Mapping keys match expected hook_mail $key.
+        tfa_enabled_configuration:
+          type: mail
+          label: 'User-enabled TFA email'
+        tfa_disabled_configuration:
+          type: mail
+          label: 'User-disabled TFA email'
+
+tfa.login.config.tfa_trusted_browser:
+  type: string
+  label: 'Tfa Trusted Browser'
+
+tfa.validation.plugin.config.tfa_recovery_code:
+  type: mapping
+  label: 'TFA Recovery Code settings'
+  mapping:
+    recovery_codes_amount:
+      type: integer
+      label: 'Number of recovery codes generated'
+
+tfa.validation.plugin.config.tfa_email_code:
+  type: mapping
+  label: 'TFA Email Code settings'
+  mapping:
+    code_validity_period:
+      type: integer
+      label: 'Number of recovery codes generated'
+    email_setting:
+      type: mapping
+      label: 'Authentication code email'
+      mapping:
+        subject:
+          type: label
+          label: 'Subject'
+        body:
+          type: text
+          label: 'Message'

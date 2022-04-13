@@ -1,0 +1,5 @@
+services:
+  tfa.commands:
+    class: \Drupal\tfa\Commands\TfaCommands
+    tags:
+      - { name: drush.command }

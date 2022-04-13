@@ -1,0 +1,153 @@
+<?php
+
+/**
+ * @file
+ * Installation related functions for TFA module.
+ */
+
+use Drupal\Core\Session\AccountInterface;
+
+/**
+ * Implements hook_requirements().
+ */
+function tfa_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'runtime') {
+    if (!extension_loaded('openssl')) {
+      if (extension_loaded('mcrypt')) {
+        $severity = REQUIREMENT_WARNING;
+        $description = t('The TFA module recommends the PHP OpenSSL extension to be installed on the web server.');
+      }
+      else {
+        $severity = REQUIREMENT_ERROR;
+        $description = t('The TFA module requires either the PHP OpenSSL or Mcrypt extensions to be installed on the web server.');
+      }
+
+      $requirements['tfa_extensions'] = [
+        'title' => t('Two-factor authentication'),
+        'value' => t('Required PHP extensions'),
+        'description' => $description,
+        'severity' => $severity,
+      ];
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Clear plugin cache as validation plugins moved to ga_login module.
+ */
+function tfa_update_8001() {
+  \Drupal::cache('discovery')
+    ->invalidateMultiple(['tfa_setup', 'tfa_validation']);
+}
+
+/**
+ * Add new email configuration values.
+ */
+function tfa_update_8002() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $config
+    ->set('mail.tfa_enabled_configuration.subject', "Your [site:name] account now has two-factor authentication")
+    ->set('mail.tfa_enabled_configuration.body', "[user:display-name],\n\nThanks for configuring two-factor authentication on your [site:name] account!\n\nThis additional level of security will help to ensure that only you are able to log in to your account.\n\nIf you ever lose the device you configured, you should act quickly to delete its association with this account.\n\n-- \n[site:name] team")
+    ->set('mail.tfa_disabled_configuration.subject', "Your [site:name] account no longer has two-factor authentication")
+    ->set('mail.tfa_disabled_configuration.body', "[user:display-name],\n\nTwo-factor authentication has been disabled on your [site:name] account.\n\nIf you did not take this action, please contact a site administrator immediately.\n\n-- \n[site:name] team")
+    ->save();
+}
+
+/**
+ * Move old 'require tfa' permissions into tfa.settings.
+ */
+function tfa_update_8003() {
+  $required_roles = [];
+  $role_storage = \Drupal::entityTypeManager()->getStorage('user_role');
+  foreach ($role_storage->loadMultiple() as $role) {
+    /** @var \Drupal\user\RoleInterface $role */
+    $rid = $role->id();
+    $required_roles[$rid] = 0;
+    if ($role->hasPermission('require tfa')) {
+      $required_roles[$rid] = $rid;
+      $role->revokePermission('require tfa')
+        ->save();
+    }
+  }
+  unset($required_roles[AccountInterface::ANONYMOUS_ROLE]);
+
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $config->set('required_roles', $required_roles)
+    ->save();
+}
+
+/**
+ * Set the enabled validation plugin to an allowed validation plugin.
+ */
+function tfa_update_8004() {
+  // Update configuration with new property values.
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+  $validation_plugin = $config->get('validation_plugin');
+  $config
+    ->clear('validation_plugin')
+    ->set('default_validation_plugin', $validation_plugin)
+    ->set('allowed_validation_plugins', [$validation_plugin => $validation_plugin])
+    ->save();
+
+  // Update user settings to turn enabled plugins string into an array.
+  $user_data_service = \Drupal::service('user.data');
+  $tfa_users_settings = $user_data_service->get('tfa', NULL, 'tfa_user_settings');
+  foreach ($tfa_users_settings as $uid => $settings) {
+    if (isset($settings['data']['plugins']) && !is_array($settings['data']['plugins'])) {
+      /*
+       * Fix a bug with how plugins were previously stored.
+       *
+       * - Previously if the user enabled both a validation plugin and its
+       *   fallback, only the fallback would be stored in their data array.
+       *
+       * - So if the current validation plugin id is not the same as the plugin
+       *   id stored in user data, then we need to add both to the new array.
+       */
+      $plugins = [];
+      if ($validation_plugin != $settings['data']['plugins']) {
+        $plugins[$validation_plugin] = $validation_plugin;
+      }
+      $plugins[$settings['data']['plugins']] = $settings['data']['plugins'];
+      $settings['data']['plugins'] = $plugins;
+      $user_data_service->set('tfa', $uid, 'tfa_user_settings', $settings);
+    }
+  }
+}
+
+/**
+ * Convert tfa_recovery_code from a fallback plugin into validation plugin.
+ */
+function tfa_update_8005() {
+  $config = \Drupal::configFactory()->getEditable('tfa.settings');
+
+  if (!empty($config->get('fallback_plugins'))) {
+    // There could have been multiple instances of recovery codes as fallbacks.
+    // But as a validation plugin we only need the settings for one of those, so
+    // get the first instance.
+    $settings = [];
+    foreach ($config->get('fallback_plugins') as $fallbacks) {
+      if (isset($fallbacks['tfa_recovery_code'])) {
+        $settings = $fallbacks['tfa_recovery_code']['settings'];
+        break;
+      }
+    }
+
+    // Save the settings to the validation_plugin_settings array, and enable the
+    // tfa_recovery_code plugin as an allowed plugin.
+    if (!empty($settings)) {
+      $validation_plugin_settings = $config->get('validation_plugin_settings');
+      $validation_plugin_settings['tfa_recovery_code'] = $settings;
+
+      $allowed_validation_plugins = $config->get('allowed_validation_plugins');
+      $allowed_validation_plugins['tfa_recovery_code'] = 'tfa_recovery_code';
+
+      $config
+        ->clear('fallback_plugins')
+        ->set('validation_plugin_settings', $validation_plugin_settings)
+        ->set('allowed_validation_plugins', $allowed_validation_plugins)
+        ->save();
+    }
+  }
+}

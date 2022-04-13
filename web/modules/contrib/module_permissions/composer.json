@@ -1,0 +1,14 @@
+{
+  "name": "drupal/module_permissions",
+  "type": "drupal-module",
+  "description": "Protects a site with the managed disallowed list of modules, permissions and paths.",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/module_permissions",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/module_permissions",
+    "source": "http://cgit.drupalcode.org/module_permissions"
+  },
+  "require": { }
+}
