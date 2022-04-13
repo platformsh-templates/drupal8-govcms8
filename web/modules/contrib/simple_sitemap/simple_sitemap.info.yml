@@ -1,0 +1,11 @@
+name: 'Simple XML Sitemap'
+type: module
+description: 'Generates standard conform hreflang XML sitemaps of the site content and provides a framework for developing other sitemap types.'
+configure: entity.simple_sitemap.collection
+package: SEO
+core_version_requirement: ^8.7.7 || ^9
+
+# Information added by Drupal.org packaging script on 2022-02-09
+version: '4.1.1'
+project: 'simple_sitemap'
+datestamp: 1644365755

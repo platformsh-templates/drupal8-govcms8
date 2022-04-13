@@ -7,7 +7,7 @@
 
 # These both allow you to test this template without needing a site on Platform.sh
 # However you will want to replace them in your .lando.yml
-name: platformsh-drupal8-govcms8
+name: platformsh-drupal9
 recipe: platformsh
 
 config:
@@ -20,15 +20,13 @@ config:
   overrides:
     app:
       variables:
-        d8config:
+        drupalconfig:
           "system.file:path:temporary": "/tmp"
-        d8settings:
+        drupalsettings:
           "skip_permissions_hardening": 1
 
 
 # These are tools that are commonly used during development for this template.
 tooling:
   drush:
-    service: app
-  drupal:
     service: app
