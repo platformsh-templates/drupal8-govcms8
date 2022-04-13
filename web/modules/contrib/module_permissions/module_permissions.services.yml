@@ -1,0 +1,19 @@
+services:
+  module_permissions.helper:
+    class: Drupal\module_permissions\Helper
+    arguments: ['@config.factory', '@messenger', '@string_translation', '@module_handler', '@user.permissions', '@current_user']
+  module_permissions.uninstall_validator:
+    class: Drupal\module_permissions\UninstallValidator
+    tags:
+      - { name: module_install.uninstall_validator }
+    arguments: ['@module_permissions.helper', '@string_translation']
+    lazy: true
+  module_permissions.route_subscriber:
+    class: Drupal\module_permissions\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  module_permissions.user_admin_permissions_access_check:
+    class: Drupal\module_permissions\UserAdminPermissionsAccessCheck
+    arguments: ['@current_user']
+    tags:
+      - { name: access_check, applies_to: _module_permissions_user_admin_permissions_access_check }

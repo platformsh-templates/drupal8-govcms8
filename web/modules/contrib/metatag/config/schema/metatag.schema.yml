@@ -1,0 +1,40 @@
+# Schema for metatag.
+field.value.metatag:
+  type: mapping
+  label: 'Default value'
+  mapping:
+    value:
+      type: string
+      label: 'Metatags'
+
+metatag.unset:
+  type: config_object
+  label: 'Metatag unset'
+  mapping:
+    unset_by_rel:
+      type: boolean
+      label: 'Unset by "rel" attribute'
+    unset_by_name:
+      type: boolean
+      label: 'Unset by "name" attribute'
+    rel_list:
+      type: sequence
+      label: 'List of values for "rel" attribute'
+      sequence:
+        type: string
+    name_list:
+      type: sequence
+      label: 'List of values for "name" attribute'
+      sequence:
+        type: string
+
+field.widget.settings.metatag_firehose:
+  type: mapping
+  label: 'Advanced meta tags form'
+  mapping:
+    sidebar:
+      type: boolean
+      label: 'Place field in sidebar'
+    use_details:
+      type: boolean
+      label: 'Place field in collapsed details container'
