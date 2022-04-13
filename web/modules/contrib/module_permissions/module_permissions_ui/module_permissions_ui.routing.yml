@@ -1,0 +1,36 @@
+module_permissions_ui.settings:
+  path: '/admin/config/system/module-permissions'
+  defaults:
+    _title: 'Module Permissions settings'
+    _form: '\Drupal\module_permissions_ui\Form\SettingsForm'
+  requirements:
+    _permission: 'administer module_permissions'
+  options:
+    _admin_route: TRUE
+module_permissions_ui.managed_modules:
+  path: '/admin/config/system/module-permissions/managed-modules'
+  defaults:
+    _title: 'Managed modules'
+    _form: '\Drupal\module_permissions_ui\Form\ManagedModulesForm'
+  requirements:
+    _permission: 'administer module_permissions'
+  options:
+    _admin_route: TRUE
+module_permissions_ui.protected_modules:
+  path: '/admin/config/system/module-permissions/protected-modules'
+  defaults:
+    _title: 'Protected modules'
+    _form: '\Drupal\module_permissions_ui\Form\ProtectedModulesForm'
+  requirements:
+    _permission: 'administer module_permissions'
+  options:
+    _admin_route: TRUE
+module_permissions_ui.permission_blacklist:
+  path: '/admin/config/system/module-permissions/permission-blacklist'
+  defaults:
+    _title: 'Permission blacklist'
+    _form: '\Drupal\module_permissions_ui\Form\PermissionBlacklistForm'
+  requirements:
+    _permission: 'administer module_permissions'
+  options:
+    _admin_route: TRUE

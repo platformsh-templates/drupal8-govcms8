@@ -1,0 +1,14 @@
+name: 'Module Permissions UI'
+type: module
+description: 'Administrative interface to Module Permissions module.'
+package: 'Administration'
+configure: module_permissions_ui.settings
+dependencies:
+  - module_permissions:module_permissions
+core_version_requirement: ^8.8 || ^9
+hidden: true
+
+# Information added by Drupal.org packaging script on 2022-02-09
+version: '3.1.0'
+project: 'module_permissions'
+datestamp: 1644379757

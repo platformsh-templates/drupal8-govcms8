@@ -1,0 +1,14 @@
+type: module
+name: Panelizer Quick Edit
+description: 'Enables Quick Edit to function normally when using Panelizer.'
+package: Layout
+# version: VERSION
+core_version_requirement: ^8.8 || ^9
+dependencies:
+  - panelizer:panelizer
+  - drupal:quickedit
+
+# Information added by Drupal.org packaging script on 2020-04-28
+version: '8.x-4.4'
+project: 'panelizer'
+datestamp: 1588097388

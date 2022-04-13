@@ -1,0 +1,9 @@
+name: Scheduled transtions target revisions query alter test module
+type: module
+package: Testing
+core_version_requirement: ^9
+
+# Information added by Drupal.org packaging script on 2022-01-26
+version: '2.2.0'
+project: 'scheduled_transitions'
+datestamp: 1643197411
