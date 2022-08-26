@@ -1,10 +1,10 @@
 name: DBAL Connection
 description: "Provides a Doctrine/DBAL connection from your Database connection settings."
 type: module
-core_version_requirement: ^8.8 || ^9.0
+core_version_requirement: ^8.8 || ^9.0 || ^10
 package: Developer
 
-# Information added by Drupal.org packaging script on 2022-02-18
-version: '8.x-1.4'
+# Information added by Drupal.org packaging script on 2022-08-18
+version: '8.x-1.5'
 project: 'dbal'
-datestamp: 1645225733
+datestamp: 1660854636
