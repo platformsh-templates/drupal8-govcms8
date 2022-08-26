@@ -48,7 +48,7 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Create Filtered HTML text format and enable entity_embed filter.
@@ -113,10 +113,9 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
     $button_id = strtolower($button_label);
     $page->fillField('label', $button_label);
     $this->assertNotEmpty($assert_session->waitForText("Machine name: $button_id"));
-    $edit = [
-      'type_id' => 'embed_test_default',
-    ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $page->selectFieldOption('type_id', 'embed_test_default');
+    $assert_session->assertWaitOnAjaxRequest();
+    $this->submitForm([], 'Save');
     // Ensure that the newly created button is listed.
     $this->drupalGet('admin/config/content/embed');
     $assert_session->pageTextContains($button_label);
@@ -127,7 +126,7 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
     $edit = [
       'label' => $new_button_label,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     // Ensure that name and label has been changed.
     $this->drupalGet('admin/config/content/embed');
     $assert_session->pageTextContains($new_button_label);
@@ -135,7 +134,7 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
 
     // Delete embed button.
     $this->drupalGet('admin/config/content/embed/button/manage/' . $button_id . '/delete');
-    $this->drupalPostForm(NULL, [], 'Delete');
+    $this->submitForm([], 'Delete');
     // Ensure that the deleted embed button no longer exists.
     $this->drupalGet('admin/config/content/embed/button/manage/' . $button_id);
     $assert_session->pageTextContains('The requested page could not be found.');
@@ -161,15 +160,15 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
     $this->assertSame('fixed-wing', $aircraft_type->getValue());
 
     $edit['type_settings[aircraft_type]'] = 'invalid';
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     $assert_session->pageTextContains('Cannot select invalid aircraft type.');
 
     $edit['type_settings[aircraft_type]'] = 'helicopters';
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     $assert_session->pageTextContains('Helicopters are just rotorcraft.');
 
     $this->drupalGet('admin/config/content/embed/button/manage/' . $button_id);
-    $this->assertFieldByName('type_settings[aircraft_type]', 'rotorcraft');
+    $this->assertSession()->fieldValueEquals('type_settings[aircraft_type]', 'rotorcraft');
   }
 
   public function testCKEditorButtonConflict() {
@@ -194,7 +193,7 @@ class EmbedButtonAdminTest extends WebDriverTestBase {
     $edit = [
       'type_id' => 'embed_test_default',
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
   }
 
 }

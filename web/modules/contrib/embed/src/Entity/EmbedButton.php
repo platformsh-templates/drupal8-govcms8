@@ -114,7 +114,7 @@ class EmbedButton extends ConfigEntityBase implements EmbedButtonInterface {
    * {@inheritdoc}
    */
   public function getIconFile() {
-    @trigger_error(__METHOD__ . ' is deprecated in Embed 1.2 and will be removed before 1.3.', E_USER_DEPRECATED);
+    @trigger_error(__METHOD__ . ' is deprecated in embed:8.x-1.2 and will be removed in embed:2.0.0. Use \Drupal\embed\Entity\EmbedButton::getIconUrl instead. See https://www.drupal.org/node/3139211', E_USER_DEPRECATED);
     if (!empty($this->icon_uuid)) {
       $files = $this->entityTypeManager()->getStorage('file')->loadByProperties(['uuid' => $this->icon_uuid]);
       return reset($files);
@@ -130,13 +130,14 @@ class EmbedButton extends ConfigEntityBase implements EmbedButtonInterface {
       if (!is_file($uri) && !UrlHelper::isExternal($uri)) {
         static::convertEncodedDataToImage($this->icon);
       }
-      $uri = file_create_url($uri);
     }
     else {
       $uri = $this->getTypePlugin()->getDefaultIconUrl();
     }
 
-    return file_url_transform_relative($uri);
+    $file_generator = $this->fileUrlGenerator();
+    $uri = $file_generator->generateAbsoluteString($uri);
+    return $file_generator->transformRelative($uri);
   }
 
   /**
@@ -161,6 +162,15 @@ class EmbedButton extends ConfigEntityBase implements EmbedButtonInterface {
    */
   protected function embedTypeManager() {
     return \Drupal::service('plugin.manager.embed.type');
+  }
+
+  /**
+   * Gets the file URL generator service.
+   *
+   * @return \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected function fileUrlGenerator() {
+    return \Drupal::service('file_url_generator');
   }
 
   /**
